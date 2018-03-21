@@ -125,3 +125,10 @@ plot(out, L+logV~(time/365), xlab = "Time (year)")
 - mrgsolve website: https://mrgsolve.github.io
 
 - User Guide: https://mrgsolve.github.io/user_guide
+
+# Please download the zipped repo again
+
+- https://github.com/mrgsolve/learn
+
+
+

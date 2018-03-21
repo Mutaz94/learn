@@ -26,8 +26,8 @@ library(ggplot2)
 <hr><div class = spacer></div>
 
 ## Question
-- What is the mean change from baseline 14 days after 3 mg/kg SC dose?
-- What is the probability that mean CFB is greater than 40%?
+- What is the median change from baseline 14 days after 3 mg/kg SC dose?
+- What is the probability that median CFB is greater than 40%?
 
 <hr><div class = spacer></div>
 # OPG model
@@ -59,6 +59,8 @@ mrgsolve:::render(mod)
 # Load the simulated posterior
 ```{r}
 post <- readRDS("data/opgpost.RDS") %>% sample_n(1000)
+post
+param(mod)
 ```
 
 
@@ -92,6 +94,12 @@ There are two specialized functions to help with this:
 ```{r}
 omegas <- as_bmat(post,"OMEGA")
 sigmas <- as_bmat(post,"SIGMA")
+omegas[[10]]
+length(omegas)
+is.list(omegas)
+slice(post, 10)
+omegas[[10]]
+sigmas[[10]]
 ```
 
 
@@ -106,6 +114,8 @@ head(sc3)
 We will get the observation design for the simulation 
 through a `tgrid` object
 ```{r}
+stime(tgrid(0, 12, 6) + 24)
+
 des <- tgrid(end=-1,add=c(0,24*14))
 des
 ```
@@ -152,6 +162,7 @@ It is easy to test the function.  The 10th replicate will
 look like this
 ```{r}
 sim(10,sc3,des)
+slice(post, 10)
 ```
 
 
@@ -161,7 +172,9 @@ Simulate reps
 options(mc.cores=8)
 mcRNG()
 set.seed(22223)
-out <- mclapply(1:1000, mc.cores = 8, sim, data=sc3,des=des) %>% bind_rows
+out <- lapply(1:1000, sim, data=sc3,des=des) %>% bind_rows
+
+head(out)
 ```
 
 
@@ -178,6 +191,7 @@ sum <-
   group_by(ID,irep) %>%
   mutate(BASE = first(PDDV), dDV = 100*(PDDV-BASE)/BASE) %>%
   ungroup
+head(sum)
 ```
 
 
@@ -195,6 +209,11 @@ summ <-
   filter(time==336) %>%
   group_by(irep) %>%
   summarise(med = median(dDV))
+
+ggplot(summ, aes( x = med)) + 
+  geom_histogram(alpha = 0.4, col = "white")
+
+summ
 ```
 
 
